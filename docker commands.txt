@@ -1,0 +1,130 @@
+docker run -it -d --name=faysalubuntu ubuntu
+docker run -it -d --name=redis redis
+
+#creatin link
+docker run -it -d --name=vote -p 5000:80 --link redis:redis voting-app
+
+
+#stop all containers
+docker container stop $(docker container ls -aq)
+
+#remove all containers
+docker container rm $(docker container ls -aq)
+
+#remove all dangled an unused images
+docker image prune
+
+#remove all images
+docker image prune -a
+
+#create volume
+docker volume create data_volume
+#then mounting (There are two types volume mount and bind mount)
+#volume mount (mount a volume)
+docker run -v data_volume:/var/lib/mysql mysql
+#bind mount (mount a directory) 
+#The old way
+docker run -v /data/mysql:/var/lib/mysql mysql
+#The new way
+docker run --mount type=bind, source=/data/mysql,target=/var/lib/mysql mysql
+
+#remove volumes
+docker volume prune
+
+#remove all networks
+docker network prune
+
+#info about container and images
+docker info
+
+# showing arch on client and server
+docker version
+
+#showing all commands
+docker
+
+#run command (if image not there it will download it)
+#run it in interactive mode and once u do ctrl+c it will stop it
+docker container run -it -p 80:80 nginx
+go to localhost:80
+
+#remove container
+docker container rm (container ID)
+
+#pull image
+docker pull nginx
+
+#run the container in background daemon mode
+docker container run -d -p 8080:80 --name mynginx nginx
+
+#list containers
+docker container ps
+docker container ps -a
+docker ps 
+docker ps -a
+docker container ls
+
+#downald image of db mysql and run container out of it
+ docker container run -d -p 3306:3306 --name mysql --env MYSQL_ROOT_PASSWORD=12345 mysql	
+
+#stop running container 
+docker container stop (container name or id)
+
+#remove a running container 
+ docker container rm myapache -f
+
+#log into running container
+docker container exec -it mynginx bash
+
+#remove all containers
+docker rm $(docker ps -aq) -f
+
+#volume bind mount 
+docker container run -d -p 8080:80 -v c:\Users\Faysal\Desktop\trave_docker:/usr/share/nginx/html --name nginx-website nginx
+
+#Build an image from docker file
+#(.) refer to the dockerfile in current directory
+docker image build -t faysal/nginx-website .
+
+
+#inspect container 
+docker inspect (container name or id)
+
+
+######docker compose ########
+#link is deprecated
+
+docker run -d --name=web -p 3000:80 --link database:database faysal/webapp
+docker run -d --name=database mongodb
+docker run -d --name=redis redis
+
+docker-compose.yml
+version: 3 #automatically create a bridged network and then attach containers to new netowrk
+services:
+	web:
+	  image:"faysal/webapp"
+	  #incase the image is not build yet we can use build n reference it to the location of dockerfile
+	  build: ./vote
+	  ports:
+            - 3000:80
+	  depands_on:
+            - database
+          # we could modify architecture of defualt bridge by adding networks to separate traffic frontend from backend
+	  networks:
+		- back-end
+		- front-end
+	 # no need to use link in version 2 and above
+	 #links:
+            #- database
+	database:
+	  image:"mongodb"
+	  networks:
+		- back-end
+	redis:
+	  image:"redis"
+
+networks:
+	front-end: #traffic from user
+	back_end:  # internal traffic network
+
+docker-compose up
